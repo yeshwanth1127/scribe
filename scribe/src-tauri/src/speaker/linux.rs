@@ -107,7 +107,7 @@ impl SpeakerStream {
         let init_result: Result<(Simple, u32)> = (|| {
             let simple = Simple::new(
                 None,                   // Use default server
-                "Scribe",               // Application name
+                "Ghost",               // Application name
                 Direction::Record,      // Record direction
                 source_name.as_deref(), // Source name (monitor)
                 "System Audio Capture", // Stream description

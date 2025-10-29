@@ -20,15 +20,13 @@ impl OpenRouterService {
         system_prompt: Option<&str>,
         images: Option<&serde_json::Value>,
         history: Option<&str>,
+        model_id: Option<&str>,
     ) -> Result<impl futures::Stream<Item = Result<String, reqwest::Error>>, reqwest::Error> {
         let client = reqwest::Client::new();
         
-        // Select model based on input
-        let model = if images.is_some() {
-            "anthropic/claude-3.5-sonnet" // Vision capable
-        } else {
-            "anthropic/claude-3.5-sonnet"
-        };
+        // Select model: require client-provided model_id; if not provided and images present,
+        // the client should have chosen a vision-capable model. We do not hardcode defaults.
+        let model = model_id.unwrap_or("");
 
         let mut messages = Vec::new();
         
@@ -81,7 +79,7 @@ impl OpenRouterService {
         let response = client
             .post(&format!("{}/chat/completions", self.config.openrouter_base_url))
             .header("Authorization", format!("Bearer {}", self.config.openrouter_api_key))
-            .header("HTTP-Referer", "https://scribe.com")
+            .header("HTTP-Referer", "https://exora.solutions")
             .header("Content-Type", "application/json")
             .json(&body)
             .send()

@@ -42,7 +42,7 @@ pub fn run() {
     let mut builder = tauri::Builder::default()
         .plugin(
             tauri_plugin_sql::Builder::default()
-                .add_migrations("sqlite:Scribe.db", db::migrations())
+                .add_migrations("sqlite:ghost.db", db::migrations())
                 .build(),
         )
         .manage(AudioState::default())
@@ -55,21 +55,21 @@ pub fn run() {
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_keychain::init())
-        .plugin(tauri_plugin_shell::init()) // Add shell plugin
-        .plugin(posthog_init(PostHogConfig {
-            api_key: posthog_api_key,
-            options: Some(PostHogOptions {
-                // disable session recording
-                disable_session_recording: Some(true),
-                // disable pageview
-                capture_pageview: Some(false),
-                // disable pageleave
-                capture_pageleave: Some(false),
-                ..Default::default()
-            }),
-            ..Default::default()
-        }))
+        .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_machine_uid::init());
+        
+        if !posthog_api_key.is_empty() {
+            builder = builder.plugin(posthog_init(PostHogConfig {
+                api_key: posthog_api_key.clone(),
+                options: Some(PostHogOptions {
+                    disable_session_recording: Some(true),
+                    capture_pageview: Some(false),
+                    capture_pageleave: Some(false),
+                    ..Default::default()
+                }),
+                ..Default::default()
+            }));
+        }
         #[cfg(target_os = "macos")]
         {
             builder = builder.plugin(tauri_nspanel::init());

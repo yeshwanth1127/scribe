@@ -1895,6 +1895,46 @@ dependencies = [
 ]
 
 [[package]]
+name = "ghost"
+version = "0.1.7"
+dependencies = [
+ "anyhow",
+ "base64 0.22.1",
+ "cidre",
+ "cpal",
+ "dotenv",
+ "futures-util",
+ "hound",
+ "image",
+ "libpulse-binding",
+ "libpulse-simple-binding",
+ "once_cell",
+ "reqwest 0.12.23",
+ "ringbuf",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "tauri-nspanel",
+ "tauri-plugin-autostart",
+ "tauri-plugin-global-shortcut",
+ "tauri-plugin-http",
+ "tauri-plugin-keychain",
+ "tauri-plugin-machine-uid",
+ "tauri-plugin-macos-permissions",
+ "tauri-plugin-opener",
+ "tauri-plugin-posthog",
+ "tauri-plugin-shell",
+ "tauri-plugin-sql",
+ "tauri-plugin-updater",
+ "tokio",
+ "tracing",
+ "uuid",
+ "wasapi",
+ "xcap",
+]
+
+[[package]]
 name = "gif"
 version = "0.13.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5010,46 +5050,6 @@ name = "scopeguard"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
-
-[[package]]
-name = "scribe"
-version = "0.1.7"
-dependencies = [
- "anyhow",
- "base64 0.22.1",
- "cidre",
- "cpal",
- "dotenv",
- "futures-util",
- "hound",
- "image",
- "libpulse-binding",
- "libpulse-simple-binding",
- "once_cell",
- "reqwest 0.12.23",
- "ringbuf",
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
- "tauri-nspanel",
- "tauri-plugin-autostart",
- "tauri-plugin-global-shortcut",
- "tauri-plugin-http",
- "tauri-plugin-keychain",
- "tauri-plugin-machine-uid",
- "tauri-plugin-macos-permissions",
- "tauri-plugin-opener",
- "tauri-plugin-posthog",
- "tauri-plugin-shell",
- "tauri-plugin-sql",
- "tauri-plugin-updater",
- "tokio",
- "tracing",
- "uuid",
- "wasapi",
- "xcap",
-]
 
 [[package]]
 name = "sct"

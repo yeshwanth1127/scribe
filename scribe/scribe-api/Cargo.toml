@@ -1,5 +1,5 @@
 [package]
-name = "scribe-api"
+name = "ghost-api"
 version = "0.1.0"
 edition = "2021"
 

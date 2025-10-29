@@ -9,6 +9,6 @@ impl PaymentService {
 
     pub async fn create_checkout_session(&self, _license_tier: &str) -> Result<String, String> {
         // TODO: Integrate with Stripe or Lemon Squeezy
-        Ok("https://scribe.com/checkout".to_string())
+        Ok("https://exora.solutions/checkout".to_string())
     }
 }

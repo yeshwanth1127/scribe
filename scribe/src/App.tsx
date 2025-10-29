@@ -19,7 +19,7 @@ const App = () => {
     handleSelectConversation,
     handleNewConversation,
   } = useApp();
-  const { customizable } = useAppContext();
+  const { customizable, trialExpired } = useAppContext() as any;
   return (
     <div
       className={`w-screen h-screen flex overflow-hidden justify-center items-start ${
@@ -27,7 +27,11 @@ const App = () => {
       }`}
     >
       <Card className="w-full flex flex-row items-center gap-2 p-2">
-        <SystemAudio {...systemAudio} />
+        {trialExpired ? (
+          <div className="absolute top-1 left-1 right-1 mx-2 px-3 py-1 text-xs rounded bg-amber-100 text-amber-700 border border-amber-200">
+            Trial expired. Please upgrade to continue.
+          </div>
+        ) : null}
         {systemAudio?.capturing ? (
           <div className="flex flex-row items-center gap-2 justify-between w-full">
             <div className="flex flex-1 items-center gap-2">
@@ -55,7 +59,7 @@ const App = () => {
               : "w-full flex flex-row gap-2 items-center"
           }`}
         >
-          <Completion isHidden={isHidden} />
+          <Completion isHidden={isHidden} systemAudio={systemAudio} />
           <ChatHistory
             onSelectConversation={handleSelectConversation}
             onNewConversation={handleNewConversation}

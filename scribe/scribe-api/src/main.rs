@@ -56,7 +56,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Initialize tracing
     tracing_subscriber::fmt()
         .with_env_filter(
-            std::env::var("RUST_LOG").unwrap_or_else(|_| "scribe_api=debug".to_string()),
+            std::env::var("RUST_LOG").unwrap_or_else(|_| "ghost_api=debug".to_string()),
         )
         .init();
 
@@ -78,7 +78,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let app = create_router(pool).await;
 
     let addr = SocketAddr::from(([0, 0, 0, 0], config.port));
-    tracing::info!("🚀🚀🚀 Scribe API server listening on {} 🚀🚀🚀", addr);
+    tracing::info!("🚀🚀🚀 Ghost API server listening on {} 🚀🚀🚀", addr);
     tracing::info!("📍 Available endpoints:");
     tracing::info!("  - GET  http://{}:{}/health", "localhost", config.port);
     tracing::info!("  - POST http://{}:{}/api/v1/models", "localhost", config.port);

@@ -309,24 +309,69 @@ pub async fn chat_stream(
 
                         if !json_str.is_empty() {
                             // Try to parse the JSON and extract content
-                            if let Ok(parsed) = serde_json::from_str::<serde_json::Value>(json_str)
-                            {
-                                if let Some(choices) =
-                                    parsed.get("choices").and_then(|c| c.as_array())
-                                {
-                                    if let Some(first_choice) = choices.first() {
-                                        if let Some(delta) = first_choice.get("delta") {
-                                            if let Some(content) =
-                                                delta.get("content").and_then(|c| c.as_str())
-                                            {
-                                                full_response.push_str(content);
-                                                // Emit just the content to frontend
-                                                let _ = app.emit("chat_stream_chunk", content);
-                                            }
+                        if let Ok(parsed) = serde_json::from_str::<serde_json::Value>(json_str) {
+                            // Heuristic extractor: try common paths then fall back to a recursive search
+                            fn find_text(v: &serde_json::Value) -> Option<String> {
+                                // Try known shapes quickly
+                                if let Some(s) = v.get("choices")
+                                    .and_then(|c| c.as_array()).and_then(|a| a.get(0))
+                                    .and_then(|c0| c0.get("delta"))
+                                    .and_then(|d| d.get("content"))
+                                    .and_then(|c| c.as_str())
+                                { return Some(s.to_string()); }
+                                if let Some(s) = v.get("delta").and_then(|d| d.get("text")).and_then(|t| t.as_str()) {
+                                    return Some(s.to_string());
+                                }
+                                if let Some(s) = v.get("text").and_then(|t| t.as_str()) { return Some(s.to_string()); }
+                                if let Some(s) = v.get("candidates")
+                                    .and_then(|c| c.as_array()).and_then(|a| a.get(0))
+                                    .and_then(|c0| c0.get("content"))
+                                    .and_then(|cnt| cnt.get("parts"))
+                                    .and_then(|p| p.as_array()).and_then(|a| a.get(0))
+                                    .and_then(|p0| p0.get("text"))
+                                    .and_then(|t| t.as_str())
+                                { return Some(s.to_string()); }
+
+                                // Recursive search: prefer keys commonly used for text
+                                fn dfs(val: &serde_json::Value) -> Option<String> {
+                                    match val {
+                                        serde_json::Value::String(s) => {
+                                            if !s.is_empty() { return Some(s.clone()); }
+                                            None
                                         }
+                                        serde_json::Value::Object(map) => {
+                                            // Prioritize likely keys
+                                            let preferred = [
+                                                "content", "text", "delta", "output_text", "generated_text", "message"
+                                            ];
+                                            for k in preferred {
+                                                if let Some(v) = map.get(k) {
+                                                    if let Some(s) = dfs(v) { return Some(s); }
+                                                }
+                                            }
+                                            // Fallback: any key
+                                            for (_k, v) in map {
+                                                if let Some(s) = dfs(v) { return Some(s); }
+                                            }
+                                            None
+                                        }
+                                        serde_json::Value::Array(arr) => {
+                                            for v in arr {
+                                                if let Some(s) = dfs(v) { return Some(s); }
+                                            }
+                                            None
+                                        }
+                                        _ => None
                                     }
                                 }
+                                dfs(v)
                             }
+
+                            if let Some(content) = find_text(&parsed) {
+                                full_response.push_str(&content);
+                                let _ = app.emit("chat_stream_chunk", &content);
+                            }
+                        }
                         }
                     }
                 }

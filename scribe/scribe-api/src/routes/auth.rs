@@ -193,7 +193,7 @@ pub async fn validate(
 pub async fn checkout() -> impl IntoResponse {
     Json(serde_json::json!({
         "success": true,
-        "checkout_url": "https://scribe.com/checkout"
+        "checkout_url": "https://exora.solutions/checkout"
     }))
 }
 
@@ -202,9 +202,13 @@ pub async fn create_trial(
     Json(request): Json<ActivationRequest>,
 ) -> impl IntoResponse {
     tracing::info!("🎯 CREATE TRIAL REQUEST RECEIVED");
-    tracing::info!("License Key: {}", request.license_key);
-    tracing::info!("Machine ID: {}", request.machine_id);
+    let license_key_str = request.license_key.clone();
+    let machine_id_str = request.machine_id.clone();
+    tracing::info!("License Key: {}", license_key_str);
+    tracing::info!("Machine ID: {}", machine_id_str);
     
+    // No user linking; licenses are created standalone
+
     // Create trial license in database
     let license_id = Uuid::new_v4();
     let trial_ends_at = Utc::now() + chrono::Duration::days(14); // 14 days trial
@@ -246,7 +250,7 @@ pub async fn create_trial(
                     Json(ActivationResponse {
                         activated: true,
                         error: None,
-                        license_key: Some(request.license_key.clone()),
+                        license_key: Some(license_key_str.clone()),
                         instance: Some(InstanceInfo {
                             id: row.get::<Uuid, _>(0).to_string(),
                             name: row.get::<String, _>(1),
@@ -296,7 +300,7 @@ pub async fn create_trial(
                             Json(ActivationResponse {
                                 activated: true,
                                 error: None,
-                                license_key: Some(request.license_key.clone()),
+                                license_key: Some(license_key_str.clone()),
                                 instance: Some(InstanceInfo {
                                     id: row.get::<Uuid, _>(0).to_string(),
                                     name: row.get::<String, _>(1),

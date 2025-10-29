@@ -120,6 +120,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     DEFAULT_CUSTOMIZABLE_STATE
   );
   const [hasActiveLicense, setHasActiveLicense] = useState<boolean>(false);
+  const [trialExpired, setTrialExpired] = useState<boolean>(false);
 
   // Scribe API State
   const [ScribeApiEnabled, setScribeApiEnabledState] = useState<boolean>(
@@ -131,6 +132,17 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       "validate_license_api"
     );
     setHasActiveLicense(response.is_active);
+    try {
+      const storage = await invoke<{ license_key?: string }>(
+        "secure_storage_get"
+      );
+      const licenseKey = storage?.license_key || "";
+      if (!response.is_active && licenseKey.startsWith("TRIAL-")) {
+        setTrialExpired(true);
+      } else {
+        setTrialExpired(false);
+      }
+    } catch {}
     // Check if the auto configs are enabled
     const autoConfigsEnabled = localStorage.getItem("auto-configs-enabled");
     if (response.is_active && !autoConfigsEnabled) {
@@ -561,6 +573,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     selectedAudioDevices,
     setSelectedAudioDevices,
     setCursorType,
+    // trial status
+    trialExpired,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

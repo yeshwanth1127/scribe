@@ -644,6 +644,33 @@ dependencies = [
 ]
 
 [[package]]
+name = "ghost-api"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-stream",
+ "axum",
+ "base64 0.22.1",
+ "chrono",
+ "dotenv",
+ "futures",
+ "futures-util",
+ "mockito",
+ "redis",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "thiserror",
+ "tokio",
+ "tower 0.4.13",
+ "tower-http",
+ "tracing",
+ "tracing-subscriber",
+ "uuid",
+]
+
+[[package]]
 name = "h2"
 version = "0.3.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1734,33 +1761,6 @@ name = "scopeguard"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
-
-[[package]]
-name = "scribe-api"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-stream",
- "axum",
- "base64 0.22.1",
- "chrono",
- "dotenv",
- "futures",
- "futures-util",
- "mockito",
- "redis",
- "reqwest",
- "serde",
- "serde_json",
- "sqlx",
- "thiserror",
- "tokio",
- "tower 0.4.13",
- "tower-http",
- "tracing",
- "tracing-subscriber",
- "uuid",
-]
 
 [[package]]
 name = "sct"

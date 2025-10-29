@@ -46,6 +46,7 @@ export type IContextType = {
   hasActiveLicense: boolean;
   setHasActiveLicense: Dispatch<SetStateAction<boolean>>;
   getActiveLicenseStatus: () => Promise<void>;
+  trialExpired?: boolean;
   selectedAudioDevices: {
     input: string;
     output: string;

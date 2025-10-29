@@ -14,8 +14,8 @@ pub async fn list_models(State(state): State<AppState>) -> Result<Json<ModelsRes
     let response = client
         .get(&url)
         .header("Authorization", format!("Bearer {}", state.openrouter_service.config.openrouter_api_key))
-        .header("HTTP-Referer", "https://scribe.com")
-        .header("X-Title", "Scribe AI")
+        .header("HTTP-Referer", "https://exora.solutions")
+        .header("X-Title", "Ghost AI")
         .send()
         .await
         .map_err(|e| format!("Failed to fetch models from OpenRouter: {}", e))?;
