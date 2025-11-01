@@ -206,7 +206,7 @@ pub async fn activate_license_api(app: AppHandle, license_key: String) -> Result
 
     // Make HTTP request to activation endpoint with authorization header
     let client = reqwest::Client::new();
-    let url = format!("{}/activate", payment_endpoint);
+    let url = format!("{}/api/v1/activate", payment_endpoint);
 
     let response = client
         .post(&url)
@@ -263,7 +263,7 @@ pub async fn deactivate_license_api(app: AppHandle) -> Result<ActivationResponse
     };
     // Make HTTP request to activation endpoint with authorization header
     let client = reqwest::Client::new();
-    let url = format!("{}/deactivate", payment_endpoint);
+    let url = format!("{}/api/v1/deactivate", payment_endpoint);
 
     let response = client
         .post(&url)
@@ -327,7 +327,7 @@ pub async fn validate_license_api(app: AppHandle) -> Result<ValidateResponse, St
 
     // Make HTTP request to validate endpoint with authorization header
     let client = reqwest::Client::new();
-    let url = format!("{}/validate", payment_endpoint);
+    let url = format!("{}/api/v1/validate", payment_endpoint);
 
     let response = client
         .post(&url)
@@ -389,13 +389,11 @@ pub async fn get_checkout_url() -> Result<CheckoutResponse, String> {
 
     // Make HTTP request to checkout endpoint with authorization header
     let client = reqwest::Client::new();
-    let url = format!("{}/checkout", payment_endpoint);
+    let url = format!("{}/api/v1/checkout", payment_endpoint);
 
     let response = client
-        .post(&url)
-        .header("Content-Type", "application/json")
+        .get(&url)
         .header("Authorization", format!("Bearer {}", api_access_key))
-        .json(&serde_json::json!({}))
         .send()
         .await
         .map_err(|e| {
@@ -437,8 +435,18 @@ pub async fn create_trial_license(app: AppHandle) -> Result<ActivationResponse, 
     let trial_license_key = format!("TRIAL-{}", Uuid::new_v4());
     
     // Get payment endpoint and API access key from environment
-    let payment_endpoint = get_payment_endpoint()?;
-    let api_access_key = get_api_access_key()?;
+    let payment_endpoint = get_payment_endpoint().map_err(|e| {
+        eprintln!("❌ Failed to get PAYMENT_ENDPOINT: {}", e);
+        e
+    })?;
+    let api_access_key = get_api_access_key().map_err(|e| {
+        eprintln!("❌ Failed to get API_ACCESS_KEY: {}", e);
+        e
+    })?;
+
+    eprintln!("🔗 PAYMENT_ENDPOINT: {}", payment_endpoint);
+    eprintln!("🔑 API_ACCESS_KEY length: {} (first 4 chars: {})", api_access_key.len(), 
+              if api_access_key.len() >= 4 { &api_access_key[..4] } else { "N/A" });
 
     // Generate instance info
     let instance_name = Uuid::new_v4().to_string();
@@ -447,8 +455,10 @@ pub async fn create_trial_license(app: AppHandle) -> Result<ActivationResponse, 
 
     // Prepare request to create trial license
     let client = reqwest::Client::new();
-    let url = format!("{}/create-trial", payment_endpoint);
+    let url = format!("{}/api/v1/create-trial", payment_endpoint);
+    eprintln!("🌐 Calling URL: {}", url);
 
+    eprintln!("📤 Sending trial license request...");
     let response = client
         .post(&url)
         .header("Content-Type", "application/json")
@@ -461,16 +471,29 @@ pub async fn create_trial_license(app: AppHandle) -> Result<ActivationResponse, 
         }))
         .send()
         .await
-        .map_err(|e| format!("Failed to create trial license: {}", e))?;
+        .map_err(|e| {
+            eprintln!("❌ Network error creating trial license: {}", e);
+            format!("Failed to create trial license: {}. Check if backend is running at {}", e, url)
+        })?;
+    
+    let status = response.status();
+    eprintln!("📥 Response status: {}", status);
 
-    if !response.status().is_success() {
-        return Err(format!("Failed to create trial: {}", response.status()));
+    if !status.is_success() {
+        let error_text = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
+        eprintln!("❌ Server error response: {}", error_text);
+        return Err(format!("Failed to create trial ({}): {}", status, error_text));
     }
 
     let activation_response: ActivationResponse = response
         .json()
         .await
-        .map_err(|e| format!("Failed to parse trial response: {}", e))?;
+        .map_err(|e| {
+            eprintln!("❌ Failed to parse response JSON: {}", e);
+            format!("Failed to parse trial response: {}", e)
+        })?;
+    
+    eprintln!("✅ Trial license response received: activated={}", activation_response.activated);
 
     // Store the trial license
     if activation_response.activated {

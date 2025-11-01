@@ -268,36 +268,51 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const initializeApp = async () => {
       try {
+        console.log("🚀 Initializing app...");
         // Check if this is first launch
         const isFirstLaunch = await invoke<boolean>("is_first_launch");
+        console.log("First launch check:", isFirstLaunch);
         
         if (isFirstLaunch) {
           console.log("First launch detected, creating trial license...");
           
-          // Create trial license automatically
-          const trialResponse = await invoke<{
-            activated: boolean;
-            error?: string;
-            license_key?: string;
-            instance?: {
-              id: string;
-              name: string;
-              created_at: string;
-            };
-          }>("create_trial_license");
-          
-          if (trialResponse.activated) {
-            console.log("✅ Trial license created successfully! 14 days trial activated.");
-            setHasActiveLicense(true);
+          try {
+            // Create trial license automatically
+            const trialResponse = await invoke<{
+              activated: boolean;
+              error?: string;
+              license_key?: string;
+              instance?: {
+                id: string;
+                name: string;
+                created_at: string;
+              };
+            }>("create_trial_license");
             
-            // Enable Scribe API by default for trial users
-            setScribeApiEnabledState(true);
-            safeLocalStorage.setItem(STORAGE_KEYS.Scribe_API_ENABLED, "true");
-          } else {
-            console.warn("Failed to create trial license:", trialResponse.error);
+            console.log("Trial license response:", trialResponse);
+            
+            if (trialResponse.activated) {
+              console.log("✅ Trial license created successfully! 14 days trial activated.");
+              setHasActiveLicense(true);
+              
+              // Enable Scribe API by default for trial users
+              setScribeApiEnabledState(true);
+              safeLocalStorage.setItem(STORAGE_KEYS.Scribe_API_ENABLED, "true");
+            } else {
+              console.error("❌ Failed to create trial license:", trialResponse.error);
+              console.error("Full response:", JSON.stringify(trialResponse, null, 2));
+            }
+          } catch (trialError: any) {
+            console.error("❌ Error calling create_trial_license:", trialError);
+            console.error("Error details:", {
+              message: trialError?.message || trialError,
+              stack: trialError?.stack,
+              toString: trialError?.toString(),
+            });
           }
         } else {
           // Not first launch, validate existing license
+          console.log("Not first launch, validating existing license...");
           await getActiveLicenseStatus();
         }
 
@@ -311,8 +326,13 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         } catch (error) {
           console.debug("Failed to track app start:", error);
         }
-      } catch (error) {
-        console.error("Failed to initialize app:", error);
+      } catch (error: any) {
+        console.error("❌ Failed to initialize app:", error);
+        console.error("Initialization error details:", {
+          message: error?.message || error,
+          stack: error?.stack,
+          toString: error?.toString(),
+        });
         // Fall back to normal flow
         await getActiveLicenseStatus();
       }

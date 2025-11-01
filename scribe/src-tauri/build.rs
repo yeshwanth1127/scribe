@@ -1,6 +1,25 @@
 fn main() {
-    dotenv::dotenv().ok();
+    // Try to load .env from multiple locations during build
+    // build.rs runs from src-tauri/ directory
+    let env_paths = vec![".env", "../.env"];
+    
+    let mut loaded = false;
+    for path in &env_paths {
+        if std::path::Path::new(path).exists() {
+            if dotenv::from_filename(path).is_ok() {
+                println!("cargo:warning=Loaded .env from {}", path);
+                loaded = true;
+                break;
+            }
+        }
+    }
+    
+    // Fallback to default behavior
+    if !loaded {
+        dotenv::dotenv().ok();
+    }
 
+    // Embed environment variables as compile-time constants
     if let Ok(payment_endpoint) = std::env::var("PAYMENT_ENDPOINT") {
         println!("cargo:rustc-env=PAYMENT_ENDPOINT={}", payment_endpoint);
     }

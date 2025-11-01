@@ -34,7 +34,117 @@ fn get_app_version() -> String {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     // Load .env for APP_ENDPOINT/API_ACCESS_KEY if present
-    let _ = dotenv::dotenv();
+    // Try to find .env file relative to the executable or current directory
+    use std::path::PathBuf;
+    
+    // Get the directory where the executable is located
+    let exe_dir = std::env::current_exe()
+        .ok()
+        .and_then(|p| p.parent().map(|p| p.to_path_buf()));
+    
+    // Try multiple possible locations
+    let mut env_paths: Vec<PathBuf> = vec![
+        PathBuf::from(".env"),                    // Current directory
+        PathBuf::from("src-tauri/.env"),           // If running from project root
+        PathBuf::from("../src-tauri/.env"),        // If running from build directory
+    ];
+    
+    // Add executable-relative paths
+    if let Some(exe_dir) = &exe_dir {
+        env_paths.push(exe_dir.join(".env"));
+        env_paths.push(exe_dir.join("..").join("src-tauri").join(".env"));
+        env_paths.push(exe_dir.join("..").join(".env"));
+    }
+    
+    // Try each path
+    let mut env_loaded = false;
+    for path in &env_paths {
+        if path.exists() {
+            if let Ok(env_path) = path.canonicalize() {
+                if let Ok(_) = dotenv::from_path(&env_path) {
+                    eprintln!("✅ Loaded .env from: {}", env_path.display());
+                    env_loaded = true;
+                    break;
+                }
+            }
+        }
+    }
+    
+    // Also try to load from src-tauri directory explicitly (for npm run tauri dev)
+    if !env_loaded {
+        if let Ok(current_dir) = std::env::current_dir() {
+            // Try current directory/src-tauri/.env (when running from scribe/)
+            let explicit_path = current_dir.join("src-tauri").join(".env");
+            if explicit_path.exists() {
+                if let Ok(_) = dotenv::from_path(&explicit_path) {
+                    eprintln!("✅ Loaded .env from: {}", explicit_path.display());
+                    env_loaded = true;
+                }
+            }
+            
+            // Also try current_dir/.env directly (when running from src-tauri/)
+            if !env_loaded {
+                let direct_path = current_dir.join(".env");
+                if direct_path.exists() {
+                    if let Ok(_) = dotenv::from_path(&direct_path) {
+                        eprintln!("✅ Loaded .env from: {}", direct_path.display());
+                        env_loaded = true;
+                    }
+                }
+            }
+        }
+    }
+    
+    // Fallback to default dotenv behavior
+    if !env_loaded {
+        let _ = dotenv::dotenv();
+    }
+    
+    // Log ALL environment variables starting with PAYMENT, APP, or API for debugging
+    eprintln!("🔍 Checking environment variables...");
+    eprintln!("   Current working directory: {:?}", std::env::current_dir().unwrap_or_default());
+    
+    // Check all relevant env vars
+    let env_vars = vec!["PAYMENT_ENDPOINT", "APP_ENDPOINT", "API_ACCESS_KEY"];
+    for var_name in env_vars {
+        match std::env::var(var_name) {
+            Ok(val) => {
+                if var_name.contains("KEY") {
+                    eprintln!("✅ {} found (length: {})", var_name, val.len());
+                } else {
+                    eprintln!("✅ {} found: {}", var_name, val);
+                }
+            }
+            Err(_) => {
+                // Check compile-time constant
+                match std::env::var(format!("CARGO_{}", var_name)) {
+                    Ok(_) => eprintln!("⚠️ {} not in runtime env, but found in compile-time", var_name),
+                    Err(_) => {
+                        // Try option_env! macro values (compile-time)
+                        match var_name {
+                            "PAYMENT_ENDPOINT" => {
+                                #[cfg(feature = "debug")]
+                                eprintln!("⚠️ {} not found (runtime or compile-time)", var_name);
+                            }
+                            _ => eprintln!("⚠️ {} not found", var_name),
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    // Also dump all env vars starting with PAYMENT/APP/API for debugging
+    eprintln!("📋 All env vars matching pattern:");
+    for (key, value) in std::env::vars() {
+        if key.contains("PAYMENT") || key.contains("APP_ENDPOINT") || key.contains("API_ACCESS") {
+            if key.contains("KEY") {
+                eprintln!("   {} = {} (length: {})", key, &value[..value.len().min(4)], value.len());
+            } else {
+                eprintln!("   {} = {}", key, value);
+            }
+        }
+    }
     // Get PostHog API key
     let posthog_api_key = option_env!("POSTHOG_API_KEY")
         .unwrap_or("")
@@ -74,7 +184,7 @@ pub fn run() {
         {
             builder = builder.plugin(tauri_nspanel::init());
         }
-        let mut builder = builder.invoke_handler(tauri::generate_handler![
+        let builder = builder.invoke_handler(tauri::generate_handler![
             get_app_version,
             window::set_window_height,
             capture::capture_to_base64,
