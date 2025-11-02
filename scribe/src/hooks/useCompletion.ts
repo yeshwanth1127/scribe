@@ -16,6 +16,7 @@ import {
 } from "@/lib";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+import { useActionAssistant } from "./useActionAssistant";
 
 // Types for completion
 interface AttachedFile {
@@ -60,6 +61,7 @@ export const useCompletion = () => {
     setScreenshotConfiguration,
   } = useApp();
   const globalShortcuts = useGlobalShortcuts();
+  const actionAssistant = useActionAssistant();
 
   const [state, setState] = useState<CompletionState>({
     input: "",
@@ -144,6 +146,39 @@ export const useCompletion = () => {
           ...prev,
           input: speechText,
         }));
+      }
+
+      // Check if input is an action request (simple pattern matching)
+      const actionKeywords = [
+        "create file",
+        "read file",
+        "copy file",
+        "move file",
+        "delete file",
+        "create directory",
+        "create folder",
+        "mkdir",
+        "rename",
+      ];
+      const isActionRequest = actionKeywords.some((keyword) =>
+        input.toLowerCase().includes(keyword.toLowerCase())
+      );
+
+      // If it's an action request, try to parse it
+      if (isActionRequest) {
+        try {
+          const plan = await actionAssistant.parseIntent(input);
+          const preview = await actionAssistant.previewAction(plan);
+          
+          // Emit event to show action preview (UI will handle this)
+          // For now, we'll proceed with normal chat but this could trigger preview UI
+          // This is a simplified integration - full implementation would show preview modal
+          console.log("Action detected, preview:", preview);
+          // You could emit an event here or set state to show preview
+        } catch (error) {
+          // If parsing fails, fall through to normal chat
+          console.log("Action parsing failed, proceeding with chat:", error);
+        }
       }
 
       // Generate unique request ID

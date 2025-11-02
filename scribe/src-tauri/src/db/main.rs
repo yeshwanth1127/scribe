@@ -17,6 +17,13 @@ pub fn migrations() -> Vec<Migration> {
             sql: include_str!("migrations/chat-history.sql"),
             kind: MigrationKind::Up,
         },
+        // Migration 3: Create assistant tables (action_snapshots, audit_logs, capability_tokens)
+        Migration {
+            version: 3,
+            description: "create_assistant_tables",
+            sql: include_str!("migrations/assistant.sql"),
+            kind: MigrationKind::Up,
+        },
     ]
 }
 

@@ -14,3 +14,4 @@ export * from "./CustomCursor";
 export * from "./history";
 export * from "./speech/audio-visualizer";
 export * from "./speech/StatusIndicator";
+export * from "./assistant";

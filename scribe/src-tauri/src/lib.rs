@@ -5,8 +5,9 @@ mod shortcuts;
 mod window;
 mod db;
 mod capture;
+mod assistant;
 use tauri_plugin_posthog::{init as posthog_init, PostHogConfig, PostHogOptions};
-use tauri::{Manager, AppHandle, WebviewWindow};
+use tauri::Manager;
 use std::sync::{Arc, Mutex};
 use tokio::task::JoinHandle;
 mod speaker;
@@ -222,6 +223,14 @@ pub fn run() {
             speaker::update_vad_config,
             speaker::get_capture_status,
             speaker::get_audio_sample_rate,
+            assistant::commands::parse_intent,
+            assistant::commands::plan_with_llm,
+            assistant::commands::verify_action_plan,
+            assistant::commands::preview_action_plan,
+            assistant::commands::execute_action_plan,
+            assistant::commands::undo_action,
+            assistant::commands::get_audit_history,
+            assistant::commands::mint_capability_token,
         ])
         .setup(|app| {
             // Setup main window positioning
