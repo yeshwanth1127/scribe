@@ -10,7 +10,7 @@ import { fetch as tauriFetch } from "@tauri-apps/plugin-http";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import curl2Json from "@bany/curl-to-json";
-import { shouldUseScribeAPI } from "./Scribe.api";
+import { shouldUseScribeAPI } from "./scribe.api";
 import { CHUNK_POLL_INTERVAL_MS } from "../chat-constants";
 
 // Scribe AI streaming function

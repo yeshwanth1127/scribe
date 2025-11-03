@@ -4,7 +4,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { useEffect, useState } from "react";
 
 export const Disclaimer = () => {
-  const { hasActiveLicense } = useApp();
+  useApp();
   const [displayText, setDisplayText] = useState("");
   const [isTyping, setIsTyping] = useState(true);
   const fullText = "EXORA";

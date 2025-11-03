@@ -6,7 +6,7 @@ import { useState } from "react";
 import { Button } from "../ui/button";
 import { useApp } from "@/contexts";
 import { floatArrayToWav } from "@/lib/utils";
-import { shouldUseScribeAPI } from "@/lib/functions/Scribe.api";
+import { shouldUseScribeAPI } from "@/lib/functions/scribe.api";
 
 interface AutoSpeechVADProps {
   submit: UseCompletionReturn["submit"];

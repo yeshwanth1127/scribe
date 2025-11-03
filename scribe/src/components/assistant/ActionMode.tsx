@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useActionAssistant } from "@/hooks/useActionAssistant";
 import { ActionPreview } from "./ActionPreview";
 import { Input } from "@/components/ui/input";
@@ -9,12 +9,9 @@ import type { ActionPlan, PreviewResult } from "@/types/assistant";
 
 export function ActionMode() {
   const {
-    parseIntent,
     planAction,
     previewAction,
     executeAction,
-    currentPlan,
-    preview,
     isPlanning,
     isExecuting,
     error,

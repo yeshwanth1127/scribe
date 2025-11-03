@@ -8,7 +8,7 @@ import { invoke } from "@tauri-apps/api/core";
 
 import { TYPE_PROVIDER } from "@/types";
 import curl2Json from "@bany/curl-to-json";
-import { shouldUseScribeAPI } from "./Scribe.api";
+import { shouldUseScribeAPI } from "./scribe.api";
 
 // Scribe STT function
 async function fetchScribeSTT(audio: File | Blob): Promise<string> {

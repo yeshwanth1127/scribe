@@ -1,4 +1,4 @@
-use tauri::{App, Manager, WebviewWindow};
+use tauri::{App, Manager, WebviewWindow, Size, LogicalSize};
 
 // The offset from the top of the screen to the window
 const TOP_OFFSET: i32 = 54;
@@ -15,6 +15,8 @@ pub fn setup_main_window(app: &mut App) -> Result<(), Box<dyn std::error::Error>
         })
         .ok_or("No window found")?;
 
+    // Ensure an initial height that fits larger UI before React mounts
+    let _ = window.set_size(Size::Logical(LogicalSize::new(700.0, 140.0)));
     position_window_top_center(&window, TOP_OFFSET)?;
     
     // Set window as non-focusable on Windows

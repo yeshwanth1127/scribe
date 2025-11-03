@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import type {
   ActionPlan,
@@ -29,7 +29,7 @@ export function useActionAssistant() {
     error: null,
   });
 
-  const abortControllerRef = useRef<AbortController | null>(null);
+  // const abortControllerRef = useRef<AbortController | null>(null);
 
   /// Parse intent using deterministic parser
   const parseIntent = useCallback(async (input: string): Promise<ActionPlan> => {

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import localLogo from "../../ghost logo.PNG";
 import { invoke } from "@tauri-apps/api/core";
 import { MousePointer2 } from "lucide-react";
 
@@ -157,6 +158,13 @@ const Overlay: React.FC = () => {
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
       >
+        {/* App Logo - leftmost */}
+        <img
+          src={localLogo || "/ghost_logo.png"}
+          alt="Ghost"
+          className="fixed top-5 left-5 z-[6000] select-none pointer-events-none rounded-md"
+          style={{ width: 28, height: 28, opacity: 1, filter: "brightness(1.2) contrast(1.1)" }}
+        />
         {/* Instructions */}
         <div className="fixed top-5 left-1/2 transform -translate-x-1/2 bg-black/50 bg-opacity-10 text-white px-6 py-3 rounded-lg font-sans text-xs pointer-events-none z-[5000]">
           Click and drag to select area, press ESC to cancel

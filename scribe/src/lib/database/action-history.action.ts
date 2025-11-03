@@ -1,5 +1,14 @@
 import { getDatabase } from "./config";
-import type { AuditEntry, ActionSnapshot } from "@/types/assistant";
+import type { AuditEntry } from "@/types/assistant";
+
+interface ActionSnapshot {
+  id: string;
+  action_id: string;
+  original_path: string;
+  snapshot_path: string;
+  created_at: number;
+  retention_until: number;
+}
 
 /**
  * Save an action snapshot

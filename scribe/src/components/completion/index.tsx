@@ -14,9 +14,14 @@ export const Completion = ({
   const completion = useCompletion();
 
   return (
-    <div className="flex flex-1 items-center gap-2">
-      {/* Left spacer reserved for logo */}
-      <div className="w-12 shrink-0" />
+    <div className="flex flex-1 items-center gap-2 pb-1">
+      {/* Left logo beside input */}
+      <img
+        src={"/ghost_logo.png"}
+        alt="Ghost"
+        className="shrink-0 select-none pointer-events-none rounded-md ml-2 mr-2"
+        style={{ width: 42, height: 40, opacity: 1, filter: "brightness(1.4) contrast(1.2) saturate(1.1)" }}
+      />
       {/* Input expands */}
       <div className="flex-1">
         <Input {...completion} isHidden={isHidden} />

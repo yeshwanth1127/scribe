@@ -1,7 +1,6 @@
 import {
   Card,
   Settings,
-  SystemAudio,
   Updater,
   DragButton,
   CustomCursor,
@@ -12,6 +11,8 @@ import {
 } from "@/components";
 import { useApp } from "@/hooks";
 import { useApp as useAppContext } from "@/contexts";
+import { useEffect, useRef } from "react";
+import { invoke } from "@tauri-apps/api/core";
 const App = () => {
   const {
     isHidden,
@@ -20,13 +21,23 @@ const App = () => {
     handleNewConversation,
   } = useApp();
   const { customizable, trialExpired } = useAppContext() as any;
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    // Set a stable window height once on mount to avoid flicker/clipping
+    invoke("set_window_height", { height: 140 }).catch(() => {});
+  }, []);
+
   return (
     <div
       className={`w-screen h-screen flex overflow-hidden justify-center items-start ${
         isHidden ? "hidden pointer-events-none" : ""
       }`}
     >
-      <Card className="w-full flex flex-row items-center gap-2 p-2">
+      <Card
+        ref={containerRef as any}
+        className="w-full mx-2 my-2 flex flex-row items-center gap-3 px-4 py-3 min-h-[84px] overflow-visible rounded-2xl border border-input/50 bg-background/95 shadow-xl backdrop-blur"
+      >
         {trialExpired ? (
           <div className="absolute top-1 left-1 right-1 mx-2 px-3 py-1 text-xs rounded bg-amber-100 text-amber-700 border border-amber-200">
             Trial expired. Please upgrade to continue.

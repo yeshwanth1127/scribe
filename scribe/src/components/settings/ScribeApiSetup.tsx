@@ -4,10 +4,9 @@ import {
   TrashIcon,
   LoaderIcon,
   ChevronDown,
-  CoffeeIcon,
 } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
-import { openUrl } from "@tauri-apps/plugin-opener";
+// import { openUrl } from "@tauri-apps/plugin-opener";
 import { useApp } from "@/contexts";
 import {
   GetLicense,
@@ -306,6 +305,35 @@ export const ScribeApiSetup = () => {
     ? `Access top models from providers like ${providerList}. and select smaller models for faster responses.`
     : "Explore all the models Scribe supports.";
 
+  const selectedIsVisionCapable = (() => {
+    const modalityHasVision = (selectedModel?.modality || "")
+      .toLowerCase()
+      .includes("vision");
+    if (modalityHasVision) return true;
+
+    const idOrName = `${selectedModel?.id || ""} ${selectedModel?.name || ""}`.toLowerCase();
+    // Heuristic: treat well-known vision-capable families as vision even if modality is missing
+    const VISION_HINTS = [
+      "vision",
+      "vl",
+      "gpt-4o",
+      "gpt-4.1",
+      "gpt-4-turbo",
+      "claude-3",
+      "sonnet",
+      "haiku",
+      "opus",
+      "gemini",
+      "llava",
+      "llama-vision",
+    ];
+    return VISION_HINTS.some((hint) => idOrName.includes(hint));
+  })();
+
+  const suggestedVisionModels = models
+    .filter((m) => (m.modality || "").toLowerCase().includes("vision"))
+    .slice(0, 3);
+
   return (
     <div id="Scribe-api" className="space-y-3 -mt-2">
       {/* Support section removed as requested */}
@@ -412,7 +440,29 @@ export const ScribeApiSetup = () => {
             </Command>
           </PopoverContent>
         </Popover>
-        {/* Removed modality warning banner */}
+        {selectedModel && !selectedIsVisionCapable ? (
+          <div className="mt-2 p-3 rounded-md border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950">
+            <p className="text-sm text-amber-800 dark:text-amber-300">
+              This model does not support image inputs. For messages with images, please switch to a vision-capable model
+              {suggestedVisionModels.length > 0 ? 
+                <> such as {suggestedVisionModels.map((m) => (
+                  <button
+                    key={m.id}
+                    className="underline underline-offset-2 hover:opacity-80 mx-1"
+                    onClick={() => handleModelSelect(m)}
+                  >
+                    {m.name}
+                  </button>
+                )).reduce((prev, curr, i) => (
+                  // insert commas between items gracefully
+                  <>
+                    {prev}{i > 0 ? ", " : ""}{curr}
+                  </>
+                ))}
+                </> : null}.
+            </p>
+          </div>
+        ) : null}
         {/* License Key Input or Display */}
         <div className="space-y-2">
           {!storedLicenseKey ? (
